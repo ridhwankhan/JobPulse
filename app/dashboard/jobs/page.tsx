@@ -1,10 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { Search, Filter, SlidersHorizontal } from "lucide-react"
+import { Search, SlidersHorizontal, ExternalLink, Briefcase } from "lucide-react"
 import { Header } from "@/components/dashboard/header"
-import { JobCard } from "@/components/dashboard/job-card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -16,130 +15,61 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-const allJobs = [
-  {
-    title: "Senior Software Engineer",
-    company: "Google",
-    location: "Mountain View, CA",
-    postedAt: "2 hours ago",
-    type: "Full-time",
-    applyUrl: "https://careers.google.com",
-    isNew: true,
-  },
-  {
-    title: "Product Manager",
-    company: "Meta",
-    location: "Remote",
-    postedAt: "5 hours ago",
-    type: "Full-time",
-    applyUrl: "https://www.metacareers.com",
-    isNew: true,
-  },
-  {
-    title: "Data Scientist",
-    company: "Microsoft",
-    location: "Seattle, WA",
-    postedAt: "1 day ago",
-    type: "Full-time",
-    applyUrl: "https://careers.microsoft.com",
-    isNew: false,
-  },
-  {
-    title: "UX Designer",
-    company: "Apple",
-    location: "Cupertino, CA",
-    postedAt: "2 days ago",
-    type: "Full-time",
-    applyUrl: "https://jobs.apple.com",
-    isNew: false,
-  },
-  {
-    title: "Frontend Developer",
-    company: "Netflix",
-    location: "Los Gatos, CA",
-    postedAt: "3 days ago",
-    type: "Full-time",
-    applyUrl: "https://jobs.netflix.com",
-    isNew: false,
-  },
-  {
-    title: "Machine Learning Engineer",
-    company: "OpenAI",
-    location: "San Francisco, CA",
-    postedAt: "1 day ago",
-    type: "Full-time",
-    applyUrl: "https://openai.com/careers",
-    isNew: true,
-  },
-  {
-    title: "Backend Developer",
-    company: "Stripe",
-    location: "Remote",
-    postedAt: "4 hours ago",
-    type: "Full-time",
-    applyUrl: "https://stripe.com/jobs",
-    isNew: true,
-  },
-  {
-    title: "DevOps Engineer",
-    company: "Amazon",
-    location: "Seattle, WA",
-    postedAt: "2 days ago",
-    type: "Full-time",
-    applyUrl: "https://amazon.jobs",
-    isNew: false,
-  },
-  {
-    title: "iOS Developer",
-    company: "Airbnb",
-    location: "San Francisco, CA",
-    postedAt: "1 week ago",
-    type: "Full-time",
-    applyUrl: "https://careers.airbnb.com",
-    isNew: false,
-  },
-  {
-    title: "Security Engineer",
-    company: "Cloudflare",
-    location: "Austin, TX",
-    postedAt: "3 days ago",
-    type: "Full-time",
-    applyUrl: "https://www.cloudflare.com/careers",
-    isNew: false,
-  },
-]
+interface Job {
+  id: string
+  title: string
+  url: string
+  createdAt: string
+  trackedPage: { companyName: string; url: string }
+}
 
-const filters = ["All", "New", "Remote", "Full-time", "Part-time", "Contract"]
+const filters = ["All", "New"]
 
 export default function JobsPage() {
+  const [jobs, setJobs] = useState<Job[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [activeFilter, setActiveFilter] = useState("All")
   const [sortBy, setSortBy] = useState("recent")
 
-  const filteredJobs = allJobs.filter((job) => {
-    const matchesSearch =
-      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchQuery.toLowerCase())
+  useEffect(() => {
+    fetch("/api/user/jobs")
+      .then((r) => r.json())
+      .then((data) => { setJobs(data.jobs || []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
 
-    const matchesFilter =
-      activeFilter === "All" ||
-      (activeFilter === "New" && job.isNew) ||
-      (activeFilter === "Remote" && job.location.toLowerCase() === "remote") ||
-      job.type.toLowerCase() === activeFilter.toLowerCase()
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q") || ""
+    setSearchQuery(q)
+  }, [])
 
-    return matchesSearch && matchesFilter
-  })
+  const isNew = (createdAt: string) => {
+    return Date.now() - new Date(createdAt).getTime() < 24 * 60 * 60 * 1000
+  }
+
+  const filtered = jobs
+    .filter((job) => {
+      const q = searchQuery.toLowerCase()
+      const matchSearch =
+        job.title.toLowerCase().includes(q) ||
+        job.trackedPage.companyName.toLowerCase().includes(q)
+      const matchFilter =
+        activeFilter === "All" || (activeFilter === "New" && isNew(job.createdAt))
+      return matchSearch && matchFilter
+    })
+    .sort((a, b) =>
+      sortBy === "recent"
+        ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        : a.trackedPage.companyName.localeCompare(b.trackedPage.companyName)
+    )
 
   return (
     <div className="min-h-screen">
-      <Header
-        title="Job Alerts"
-        description="Browse all job listings from your tracked URLs"
-      />
+      <Header title="Job Alerts" description="All job listings found from your tracked URLs" />
 
       <div className="p-6 space-y-6">
-        {/* Search and Filters */}
+        {/* Search and Sort */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -148,26 +78,22 @@ export default function JobsPage() {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search jobs, companies, locations..."
+              placeholder="Search jobs or companies..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
             />
           </div>
-
-          <div className="flex items-center gap-2">
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-40">
-                <SlidersHorizontal className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="recent">Most Recent</SelectItem>
-                <SelectItem value="company">Company</SelectItem>
-                <SelectItem value="location">Location</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-40">
+              <SlidersHorizontal className="mr-2 h-4 w-4" />
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Most Recent</SelectItem>
+              <SelectItem value="company">Company</SelectItem>
+            </SelectContent>
+          </Select>
         </motion.div>
 
         {/* Filter Chips */}
@@ -181,11 +107,7 @@ export default function JobsPage() {
             <Badge
               key={filter}
               variant={activeFilter === filter ? "default" : "secondary"}
-              className={`cursor-pointer transition-all ${
-                activeFilter === filter
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-secondary/80"
-              }`}
+              className="cursor-pointer"
               onClick={() => setActiveFilter(filter)}
             >
               {filter}
@@ -193,30 +115,76 @@ export default function JobsPage() {
           ))}
         </motion.div>
 
-        {/* Results Count */}
         <p className="text-sm text-muted-foreground">
-          Showing {filteredJobs.length} of {allJobs.length} jobs
+          Showing {filtered.length} of {jobs.length} jobs
         </p>
 
-        {/* Jobs Grid */}
-        <div className="grid gap-4 md:grid-cols-2">
-          {filteredJobs.map((job, index) => (
-            <JobCard key={index} {...job} delay={index * 0.05} />
-          ))}
-        </div>
+        {!loading && searchQuery.trim() && filtered.length === 0 && (
+          <div className="rounded-lg border border-dashed border-border bg-card p-4 text-sm text-muted-foreground">
+            Nothing found for <span className="font-medium text-foreground">&quot;{searchQuery.trim()}&quot;</span> in Job Alerts.
+            Add more tracked URLs from the Track URLs page to discover more results.
+          </div>
+        )}
 
-        {filteredJobs.length === 0 && (
+        {/* Jobs List */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        ) : filtered.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-12 text-center"
+            className="flex flex-col items-center justify-center py-16 text-center"
           >
-            <Filter className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold text-foreground">No jobs found</h3>
+            <Briefcase className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold text-foreground">
+              {jobs.length === 0 ? "No jobs found yet" : "No matches for your search"}
+            </h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Try adjusting your search or filters
+              {jobs.length === 0
+                ? "Add tracked URLs and run the scraper from the Overview page."
+                : "Try a different search or filter."}
             </p>
           </motion.div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            {filtered.map((job, i) => (
+              <motion.div
+                key={job.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className="group rounded-xl border border-border bg-card p-4 hover:border-primary/40 transition-all"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-foreground truncate">{job.title}</p>
+                      {isNew(job.createdAt) && (
+                        <Badge className="bg-primary/20 text-primary text-xs">New</Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-0.5">{job.trackedPage.companyName}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Found {new Date(job.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                  >
+                    <a href={job.url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                      Apply
+                    </a>
+                  </Button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         )}
       </div>
     </div>

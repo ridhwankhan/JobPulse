@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import {
   Send,
@@ -12,45 +12,96 @@ import {
   MessageCircle,
   Bell,
   Zap,
+  HelpCircle,
 } from "lucide-react"
 import { Header } from "@/components/dashboard/header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { toast } from "sonner"
 
 export default function TelegramPage() {
   const [isConnected, setIsConnected] = useState(false)
-  const [isConnecting, setIsConnecting] = useState(false)
-  const [verificationCode, setVerificationCode] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
+  const [chatId, setChatId] = useState("")
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [inputChatId, setInputChatId] = useState("")
 
-  const botUsername = "JobPulseBot"
-  const telegramLink = `https://t.me/${botUsername}`
+  // Load current state on mount
+  useEffect(() => {
+    fetch("/api/user/telegram")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.telegramChatId) {
+          setChatId(data.telegramChatId)
+          setIsConnected(true)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
-  const handleConnect = () => {
-    setIsConnecting(true)
-    
-    // Simulate connection process
-    setTimeout(() => {
-      setIsConnecting(false)
-      setIsConnected(true)
-      toast.success("Telegram connected successfully!")
-    }, 2000)
+  const handleSaveChatId = async () => {
+    if (!inputChatId.trim()) {
+      toast.error("Please enter your Telegram Chat ID")
+      return
+    }
+    setIsSaving(true)
+    try {
+      const res = await fetch("/api/user/telegram", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ telegramChatId: inputChatId.trim() }),
+      })
+      if (res.ok) {
+        setChatId(inputChatId.trim())
+        setIsConnected(true)
+        setDialogOpen(false)
+        toast.success("Telegram connected! You will now receive job alerts.")
+      } else {
+        toast.error("Failed to save. Please try again.")
+      }
+    } catch {
+      toast.error("Network error. Please try again.")
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  const handleDisconnect = () => {
+  const handleDisconnect = async () => {
+    await fetch("/api/user/telegram", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ telegramChatId: "" }),
+    })
     setIsConnected(false)
+    setChatId("")
+    setInputChatId("")
     toast.success("Telegram disconnected")
   }
 
-  const handleSendTest = () => {
-    toast.success("Test message sent to Telegram!")
+  const handleSendTest = async () => {
+    const res = await fetch("/api/telegram/test", { method: "POST" })
+    const data = await res.json()
+    if (res.ok) {
+      toast.success("Test alert sent! Check your Telegram app now.")
+    } else {
+      toast.error(data.error || "Failed to send test alert.")
+    }
   }
 
   const copyBotLink = () => {
-    navigator.clipboard.writeText(telegramLink)
-    toast.success("Bot link copied to clipboard")
+    navigator.clipboard.writeText("https://t.me/userinfobot")
+    toast.success("Link copied to clipboard")
   }
 
   const features = [
@@ -66,8 +117,8 @@ export default function TelegramPage() {
     },
     {
       icon: Bell,
-      title: "Custom Filters",
-      description: "Only receive alerts for jobs matching your preferences",
+      title: "Per-User Alerts",
+      description: "Each account gets alerts sent to their own Telegram",
     },
   ]
 
@@ -108,110 +159,112 @@ export default function TelegramPage() {
 
                 {isConnected ? (
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Your Telegram account is linked. You&apos;ll receive job alerts
-                    directly in your Telegram chat.
+                    Your Chat ID <span className="font-mono font-semibold text-foreground">{chatId}</span> is linked.
+                    Job alerts will be sent directly to your Telegram.
                   </p>
                 ) : (
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Connect your Telegram account to receive instant job
-                    notifications.
+                    Connect your Telegram account to receive instant job notifications.
                   </p>
                 )}
               </div>
             </div>
 
-            {isConnected ? (
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Button onClick={handleSendTest}>
-                  <Send className="mr-2 h-4 w-4" />
-                  Send Test Message
-                </Button>
-                <Button variant="outline" onClick={handleDisconnect}>
-                  <Unlink className="mr-2 h-4 w-4" />
-                  Disconnect
-                </Button>
-              </div>
-            ) : (
-              <div className="mt-6 space-y-4">
-                {/* Step 1: Open Bot */}
-                <div className="rounded-lg bg-secondary/50 p-4">
-                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                      1
-                    </span>
-                    Open our Telegram Bot
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Click the button below to open @{botUsername} in Telegram
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Button asChild className="bg-[#229ED9] hover:bg-[#1a8ac4]">
-                      <a
-                        href={telegramLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
+            <div className="mt-6 flex flex-wrap gap-3">
+              {isConnected ? (
+                <>
+                  <Button onClick={handleSendTest}>
+                    <Send className="mr-2 h-4 w-4" />
+                    Send Test Alert
+                  </Button>
+                  <Button variant="outline" onClick={handleDisconnect}>
+                    <Unlink className="mr-2 h-4 w-4" />
+                    Disconnect
+                  </Button>
+                </>
+              ) : (
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-[#229ED9] hover:bg-[#1a8ac4]">
+                      <Send className="mr-2 h-4 w-4" />
+                      Connect Telegram
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2">
+                        <Send className="h-5 w-5 text-[#229ED9]" />
+                        Connect Your Telegram
+                      </DialogTitle>
+                      <DialogDescription asChild>
+                        <div className="space-y-3 text-sm text-muted-foreground">
+                          <p>Follow these steps to get your Telegram Chat ID:</p>
+                          <ol className="list-none space-y-3">
+                            <li className="flex gap-3">
+                              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground font-bold">1</span>
+                              <span>Open Telegram and search for <strong className="text-foreground">@userinfobot</strong></span>
+                            </li>
+                            <li className="flex gap-3">
+                              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground font-bold">2</span>
+                              <span>Start the chat and it will instantly reply with your <strong className="text-foreground">Id:</strong> number (e.g. <code className="rounded bg-secondary px-1">123456789</code>)</span>
+                            </li>
+                            <li className="flex gap-3">
+                              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground font-bold">3</span>
+                              <span>Also start a chat with our bot <strong className="text-foreground">@job_pulse_notification_bot</strong> and click <strong className="text-foreground">Start</strong></span>
+                            </li>
+                            <li className="flex gap-3">
+                              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground font-bold">4</span>
+                              <span>Paste your ID number below and click Save</span>
+                            </li>
+                          </ol>
+                          <a
+                            href="https://t.me/userinfobot"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[#229ED9] hover:underline"
+                          >
+                            Open @userinfobot <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </div>
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-2 py-2">
+                      <Label htmlFor="chat-id">Your Telegram Chat ID</Label>
+                      <Input
+                        id="chat-id"
+                        placeholder="e.g. 123456789"
+                        value={inputChatId}
+                        onChange={(e) => setInputChatId(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSaveChatId()}
+                      />
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <HelpCircle className="h-3 w-3" />
+                        This is your personal Telegram numeric ID, not your username.
+                      </p>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleSaveChatId}
+                        disabled={isSaving}
+                        className="bg-[#229ED9] hover:bg-[#1a8ac4]"
                       >
-                        <Send className="mr-2 h-4 w-4" />
-                        Open in Telegram
-                        <ExternalLink className="ml-2 h-3 w-3" />
-                      </a>
-                    </Button>
-                    <Button variant="outline" onClick={copyBotLink}>
-                      <Copy className="mr-2 h-4 w-4" />
-                      Copy Link
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Step 2: Start Bot */}
-                <div className="rounded-lg bg-secondary/50 p-4">
-                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                      2
-                    </span>
-                    Start the Bot
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Click the &quot;Start&quot; button in Telegram to begin the connection
-                    process
-                  </p>
-                </div>
-
-                {/* Step 3: Enter Code */}
-                <div className="rounded-lg bg-secondary/50 p-4">
-                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                      3
-                    </span>
-                    Enter Verification Code
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    The bot will send you a verification code. Enter it below:
-                  </p>
-                  <div className="mt-3 flex gap-2">
-                    <Input
-                      placeholder="Enter code from Telegram"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                      className="max-w-xs"
-                    />
-                    <Button
-                      onClick={handleConnect}
-                      disabled={isConnecting}
-                    >
-                      {isConnecting ? (
-                        <>
-                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                          Connecting...
-                        </>
-                      ) : (
-                        "Verify & Connect"
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
+                        {isSaving ? (
+                          <>
+                            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          "Save & Connect"
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </div>
           </motion.div>
 
           {/* Features */}
@@ -257,21 +310,15 @@ export default function TelegramPage() {
               Sample Alert Message
             </h3>
             <div className="rounded-lg bg-[#229ED9]/5 border border-[#229ED9]/20 p-4 font-mono text-sm">
-              <p className="text-foreground">🚨 <strong>New Job Found</strong></p>
+              <p className="text-foreground">🚨 <strong>NEW JOB FOUND</strong> 🚨</p>
               <p className="mt-2 text-muted-foreground">
                 <strong>Company:</strong> Google
               </p>
               <p className="text-muted-foreground">
-                <strong>Role:</strong> Senior Software Engineer
-              </p>
-              <p className="text-muted-foreground">
-                <strong>Location:</strong> Mountain View, CA
-              </p>
-              <p className="text-muted-foreground">
-                <strong>Posted:</strong> Today
+                <strong>Role:</strong> Software Engineer – MTO Programme
               </p>
               <p className="mt-2 text-[#229ED9]">
-                🔗 Apply: https://careers.google.com/...
+                🔗 Apply Here → https://careers.google.com/...
               </p>
             </div>
           </motion.div>

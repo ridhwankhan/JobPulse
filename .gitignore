@@ -13,12 +13,4 @@ __v0_jsx-dev-runtime.ts
 node_modules
 .next/
 .DS_Store
-
-# AI and Prompt Related Files
-instructions.md
-project_plan_and_prompts.md
-bot_instructions.md
-.cursorrules
-.gemini/
-.ai/
-*.prompt
+/lib/generated/prisma

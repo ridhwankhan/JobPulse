@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id             String           @id @default(cuid())
+  email          String           @unique
+  passwordHash   String
+  telegramChatId String?
+  trackedPages   TrackedJobPage[]
+  preferences    UserPreferences?
+  createdAt      DateTime         @default(now())
+}
+
+model TrackedJobPage {
+  id          String       @id @default(cuid())
+  url         String
+  companyName String
+  lastScraped DateTime?
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobs        JobListing[]
+  createdAt   DateTime     @default(now())
+}
+
+model JobListing {
+  id            String         @id @default(cuid())
+  title         String
+  url           String
+  trackedPageId String
+  trackedPage   TrackedJobPage @relation(fields: [trackedPageId], references: [id], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+
+  // Unique per tracked page — allows same job URL across different users
+  @@unique([url, trackedPageId])
+}
+
+model UserPreferences {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  keywords        String   @default("engineer,developer,manager,mto,data analyst")
+  locations       String   @default("")
+  experienceLevel String   @default("any")
+  jobType         String   @default("any")
+  instantAlerts   Boolean  @default(true)
+  updatedAt       DateTime @updatedAt
+}
