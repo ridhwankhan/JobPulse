@@ -70,7 +70,12 @@ export function Header({ title, description }: HeaderProps) {
         return
       }
       setOtpSent(true)
-      toast.success("OTP sent to your email address.")
+      if (data.devOtp) {
+        setDeleteOtp(data.devOtp)
+        toast.success(`Dev OTP generated: ${data.devOtp}`)
+      } else {
+        toast.success("OTP sent to your email address.")
+      }
     } catch {
       toast.error("Something went wrong")
     } finally {

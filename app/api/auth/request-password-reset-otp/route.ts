@@ -1,36 +1,31 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { createOtp } from "@/lib/otp";
 import { canSendEmail, sendOtpEmail } from "@/lib/email";
-import { isSignupEnabled } from "@/lib/settings";
+import { createOtp } from "@/lib/otp";
 
 export async function POST(req: Request) {
   try {
     const { email } = await req.json();
     const normalizedEmail = String(email || "").trim().toLowerCase();
-
     if (!normalizedEmail) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    if (!(await isSignupEnabled())) {
-      return NextResponse.json(
-        { error: "Signup is temporarily disabled for maintenance. Please try again later." },
-        { status: 403 }
-      );
-    }
-
-    const existingUser = await db.user.findFirst({
+    const user = await db.user.findFirst({
       where: { email: { equals: normalizedEmail, mode: "insensitive" } },
     });
-    if (existingUser) {
-      return NextResponse.json({ error: "User already exists" }, { status: 400 });
+    if (!user) {
+      return NextResponse.json({ error: "No account found for this email." }, { status: 404 });
     }
 
-    const { code } = await createOtp({ email: normalizedEmail, purpose: "signup" });
-    const smtpReady = canSendEmail();
-    if (smtpReady) {
-      await sendOtpEmail(normalizedEmail, code, "signup");
+    const { code } = await createOtp({
+      email: user.email,
+      purpose: "forgot-password",
+      userId: user.id,
+    });
+
+    if (canSendEmail()) {
+      await sendOtpEmail(user.email, code, "forgot-password");
       return NextResponse.json({ success: true });
     }
 
@@ -47,7 +42,7 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   } catch (error: any) {
-    console.error("Request signup OTP error:", error);
+    console.error("Request password reset OTP error:", error);
     return NextResponse.json({ error: error.message || "Failed to send OTP" }, { status: 500 });
   }
 }

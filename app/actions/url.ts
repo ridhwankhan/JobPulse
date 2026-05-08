@@ -3,10 +3,13 @@
 import { db } from "@/lib/db"
 import { getSession } from "@/lib/session"
 import { revalidatePath } from "next/cache"
+import { assertUserCanUseWriteActions } from "@/lib/user-access"
 
 export async function addTrackedUrl(url: string, companyName: string) {
   const session = await getSession()
   if (!session?.userId) return { error: "Unauthorized" }
+  const access = await assertUserCanUseWriteActions(session.userId)
+  if (!access.ok) return { error: access.error }
   if (!url || !companyName) return { error: "Missing required fields" }
 
   try {
@@ -25,6 +28,8 @@ export async function addTrackedUrl(url: string, companyName: string) {
 export async function updateTrackedUrl(id: string, url: string, companyName: string) {
   const session = await getSession()
   if (!session?.userId) return { error: "Unauthorized" }
+  const access = await assertUserCanUseWriteActions(session.userId)
+  if (!access.ok) return { error: access.error }
   if (!url || !companyName) return { error: "Missing required fields" }
 
   try {
@@ -50,6 +55,8 @@ export async function updateTrackedUrl(id: string, url: string, companyName: str
 export async function deleteTrackedUrl(id: string) {
   const session = await getSession()
   if (!session?.userId) return { error: "Unauthorized" }
+  const access = await assertUserCanUseWriteActions(session.userId)
+  if (!access.ok) return { error: access.error }
 
   try {
     await db.trackedJobPage.deleteMany({

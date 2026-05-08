@@ -24,6 +24,12 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
+    if (user.isBanned) {
+      return NextResponse.json(
+        { error: user.banReason || "Your account is banned. Contact admin." },
+        { status: 403 }
+      );
+    }
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
@@ -33,7 +39,10 @@ export async function POST(req: Request) {
 
     await createSession(user.id);
 
-    return NextResponse.json({ success: true, user: { id: user.id, email: user.email } });
+    return NextResponse.json({
+      success: true,
+      user: { id: user.id, email: user.email, isRestricted: user.isRestricted },
+    });
   } catch (error) {
     console.error("Signin error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

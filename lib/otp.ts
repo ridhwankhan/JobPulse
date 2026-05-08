@@ -10,7 +10,7 @@ export function generateOtp() {
 
 export async function createOtp(params: {
   email: string;
-  purpose: "signup" | "delete-account";
+  purpose: "signup" | "delete-account" | "forgot-password";
   userId?: string;
 }) {
   const code = generateOtp();
@@ -32,7 +32,7 @@ export async function createOtp(params: {
 
 export async function verifyOtp(params: {
   email: string;
-  purpose: "signup" | "delete-account";
+  purpose: "signup" | "delete-account" | "forgot-password";
   code: string;
 }) {
   const otp = await db.emailOtp.findFirst({

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
+import { assertUserCanUseApp, assertUserCanUseWriteActions } from "@/lib/user-access";
 
 export async function POST(req: Request) {
   try {
@@ -8,6 +9,8 @@ export async function POST(req: Request) {
     if (!session?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const access = await assertUserCanUseWriteActions(session.userId);
+    if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
     const { telegramChatId } = await req.json();
 
@@ -35,6 +38,8 @@ export async function GET() {
     if (!session?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const access = await assertUserCanUseApp(session.userId);
+    if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
     const user = await db.user.findUnique({
       where: { id: session.userId },

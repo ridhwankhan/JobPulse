@@ -194,8 +194,8 @@ TELEGRAM_BOT_TOKEN="your_bot_token"
 # Secure scheduled scraping (required for /api/cron/scrape)
 CRON_SECRET="a_long_random_secret_value"
 
-# Admin account email (defaults to ridhwankhan03@gmail.com)
-ADMIN_EMAIL="ridhwankhan03@gmail.com"
+# Admin account email (required)
+ADMIN_EMAIL="admin@example.com"
 
 # SMTP for OTP + admin messaging
 SMTP_HOST="smtp.gmail.com"
@@ -265,6 +265,9 @@ If you deploy on another platform, set any scheduler (cron/job runner) to call:
 - Signup now requires email OTP:
   - `POST /api/auth/request-signup-otp`
   - `POST /api/auth/verify-signup-otp`
+- Forgot password via OTP:
+  - `POST /api/auth/request-password-reset-otp`
+  - `POST /api/auth/verify-password-reset-otp`
 - Account deletion now requires OTP:
   - `POST /api/user/account/request-delete-otp`
   - `POST /api/user/account/verify-delete-otp`
@@ -274,7 +277,9 @@ If you deploy on another platform, set any scheduler (cron/job runner) to call:
   - Controls:
     - Toggle signup open/maintenance
     - View user details
-    - Send email to one user or broadcast to all users
+    - Ban/restrict users
+    - Force reset user password
+    - Send email or direct Telegram message to users (if linked)
 
 ---
 
@@ -315,11 +320,18 @@ The Python scraper (`scraper/main.py`) runs these steps:
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| `POST` | `/api/auth/signup` | Register a new user | ❌ |
+| `POST` | `/api/auth/request-signup-otp` | Request signup OTP by email | ❌ |
+| `POST` | `/api/auth/verify-signup-otp` | Verify OTP and create account | ❌ |
+| `POST` | `/api/auth/request-password-reset-otp` | Request password reset OTP | ❌ |
+| `POST` | `/api/auth/verify-password-reset-otp` | Verify OTP and reset password | ❌ |
 | `POST` | `/api/auth/signin` | Login, sets session cookie | ❌ |
 | `POST` | `/api/scrape` | Scrape all user's URLs, send alerts | ✅ |
 | `GET` | `/api/user/telegram` | Get current user's Telegram Chat ID | ✅ |
 | `POST` | `/api/user/telegram` | Save user's Telegram Chat ID | ✅ |
+| `GET` | `/api/admin/users` | List users for admin dashboard | ✅ Admin |
+| `POST` | `/api/admin/users/status` | Ban/restrict user | ✅ Admin |
+| `POST` | `/api/admin/users/force-reset-password` | Admin force reset user password | ✅ Admin |
+| `POST` | `/api/admin/message` | Admin send email/Telegram to users | ✅ Admin |
 
 ---
 
@@ -363,8 +375,22 @@ The Python scraper (`scraper/main.py`) runs these steps:
 - Passwords are hashed with **bcrypt** (10 salt rounds) — never stored in plain text.
 - Sessions use **signed JWT tokens** (HS256) stored in `httpOnly` cookies.
 - All dashboard routes are protected by `middleware.ts` — unauthenticated requests are redirected.
-- The `.env` file is **git-ignored** — never commit your credentials.
+- OTP codes are hashed before storage and expire automatically.
+- Accounts can be banned/restricted from admin dashboard.
+- Basic per-IP API rate limiting is enabled in middleware to reduce abuse/spam bursts.
+- `.env` and other local secret files are git-ignored — never commit credentials.
 - Supabase connection string is kept server-side only (not exposed to the browser).
+
+### Sensitive Data Safety Checklist
+
+Before pushing to GitHub:
+
+1. Confirm `.env` is not tracked:
+   - `git status --short .env`
+2. Verify no hardcoded secrets in code:
+   - `rg "postgresql://|TELEGRAM_BOT_TOKEN|SMTP_PASS|JWT_SECRET|sb_publishable_" .`
+3. Use env variables for all runtime secrets:
+   - DB, JWT, Telegram bot token, SMTP, admin email, cron secret.
 
 ---
 

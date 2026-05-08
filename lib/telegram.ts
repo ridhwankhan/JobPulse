@@ -36,28 +36,37 @@ export async function sendJobAlert(
       : `⚠️ <b>Apply Link:</b> not available`,
   ].join("\n");
 
+  await sendTelegramMessage(targetChatId, text, "HTML");
+  console.log(`[Telegram] Alert sent to ${targetChatId} for: ${jobTitle}`);
+}
+
+export async function sendTelegramMessage(
+  chatId: string,
+  text: string,
+  parseMode: "HTML" | "MarkdownV2" = "HTML"
+) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (!botToken) {
+    throw new Error("TELEGRAM_BOT_TOKEN is not set.");
+  }
+  if (!chatId?.trim()) {
+    throw new Error("Telegram chat id is missing.");
+  }
+
   const apiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-
-  try {
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: targetChatId,
-        text,
-        parse_mode: "HTML",
-        disable_web_page_preview: true,
-      }),
-    });
-
-    const json = await res.json();
-    if (!json.ok) {
-      console.error("[Telegram] API error:", JSON.stringify(json));
-    } else {
-      console.log(`[Telegram] Alert sent to ${targetChatId} for: ${jobTitle}`);
-    }
-  } catch (error) {
-    console.error("[Telegram] Fetch error:", error);
+  const res = await fetch(apiUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId.trim(),
+      text,
+      parse_mode: parseMode,
+      disable_web_page_preview: true,
+    }),
+  });
+  const json = await res.json();
+  if (!json.ok) {
+    throw new Error(json.description || "Telegram API error");
   }
 }
 

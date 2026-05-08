@@ -1,20 +1,26 @@
 "use client"
 
 import { useState } from "react"
+import { useEffect } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import { useTheme } from "next-themes"
 import {
   Briefcase,
   Link2,
-  Bell,
   Send,
   Zap,
   Shield,
-  Globe,
   ArrowRight,
   CheckCircle2,
   ChevronRight,
   Sparkles,
+  Mail,
+  Github,
+  Linkedin,
+  ExternalLink,
+  Moon,
+  Sun,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -65,11 +71,52 @@ const companies = [
   "OpenAI",
 ]
 
+const founder = {
+  name: "Ridhwanur Rahman Khan",
+  title: "Founder & Builder",
+  location: "Dhaka, Bangladesh",
+  summary:
+    "Analytical and results-driven professional with a strong blend of software engineering, business operations, and strategic problem-solving experience. Skilled in backend development, secure systems, data analytics, and cross-functional execution with the adaptability to contribute across technical, management, and growth-focused roles.",
+  links: [
+    { label: "Email", href: "mailto:ridhwankhan03@gmail.com", icon: Mail },
+    { label: "LinkedIn", href: "https://linkedin.com/in/ridhwan1", icon: Linkedin },
+    { label: "GitHub", href: "https://github.com/ridhwankhan", icon: Github },
+    { label: "Portfolio", href: "https://ridhwank-portfolio.vercel.app", icon: ExternalLink },
+  ],
+}
+
+const coDeveloper = {
+  name: "Intisar Rahman Khan",
+  title: "Co-Developer",
+  summary:
+    "I’m a Software Engineering student passionate about full-stack development, AI-powered applications, and scalable software systems. I have experience with C++, Java, Python, Django, Flutter, FastAPI, and modern web technologies to build efficient and user-focused applications. Alongside software development, I also work with photography, photo editing, and video editing, combining creativity with technology to create impactful digital experiences.",
+  links: [
+    { label: "Portfolio", href: "https://intisarrahmankhan.github.io/", icon: ExternalLink },
+    { label: "GitHub", href: "https://github.com/intisarrahmankhan", icon: Github },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/intisar-rahman-khan-909044372/", icon: Linkedin },
+  ],
+}
+
 export default function LandingPage() {
   const [email, setEmail] = useState("")
+  const [grayscaleMode, setGrayscaleMode] = useState(false)
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    const saved = window.localStorage.getItem("landing_grayscale")
+    setGrayscaleMode(saved === "true")
+  }, [])
+
+  useEffect(() => {
+    if (mounted) {
+      window.localStorage.setItem("landing_grayscale", String(grayscaleMode))
+    }
+  }, [grayscaleMode, mounted])
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen bg-background ${grayscaleMode ? "grayscale" : ""}`}>
       {/* Navigation */}
       <motion.nav
         initial={{ opacity: 0, y: -20 }}
@@ -91,12 +138,32 @@ export default function LandingPage() {
             <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               How it Works
             </a>
-            <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Pricing
+            <a href="#about-team" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              About
             </a>
+            <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Contact
+            </Link>
           </div>
 
           <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              title="Toggle theme"
+              disabled={!mounted}
+            >
+              {!mounted ? null : theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+            <Button
+              variant={grayscaleMode ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setGrayscaleMode((prev) => !prev)}
+              title="Toggle grayscale mode"
+            >
+              Gray
+            </Button>
             <Button variant="ghost" asChild>
               <Link href="/dashboard">Sign In</Link>
             </Button>
@@ -321,6 +388,65 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* About & Team */}
+      <section id="about-team" className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-14 text-center">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-3xl font-bold text-foreground sm:text-4xl"
+            >
+              About The Team
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="mt-4 text-lg text-muted-foreground"
+            >
+              Built by engineers who care about practical, secure, and user-friendly job discovery.
+            </motion.p>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            {[founder, coDeveloper].map((person, index) => (
+              <motion.div
+                key={person.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="rounded-2xl border border-border bg-card p-6"
+              >
+                <h3 className="text-xl font-semibold text-foreground">{person.name}</h3>
+                <p className="mt-1 text-sm text-primary">{person.title}</p>
+                {"location" in person && person.location && (
+                  <p className="mt-2 text-sm text-muted-foreground">{person.location}</p>
+                )}
+                <p className="mt-4 text-sm leading-6 text-muted-foreground">{person.summary}</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {person.links.map((item) => (
+                    <a
+                      key={item.label}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                    >
+                      <item.icon className="h-3.5 w-3.5" />
+                      {item.label}
+                    </a>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -385,19 +511,19 @@ export default function LandingPage() {
 
             <div className="flex items-center gap-6">
               <a
-                href="#"
+                href="/privacy"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Privacy
               </a>
               <a
-                href="#"
+                href="/terms"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Terms
               </a>
               <a
-                href="#"
+                href="/contact"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Contact

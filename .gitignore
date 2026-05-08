@@ -7,7 +7,20 @@ __v0_jsx-dev-runtime.ts
 .vercel/
 
 # Environment variables
+.env
+.env.*
 .env*.local
+.envrc
+
+# Secrets / local keys
+*.pem
+*.key
+*.p12
+*.crt
+
+# Python cache
+__pycache__/
+*.py[cod]
 
 # Common ignores
 node_modules

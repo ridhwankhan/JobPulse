@@ -36,7 +36,12 @@ export default function SignupPage() {
     setSendingOtp(false)
     if (res.ok) {
       setOtpRequested(true)
-      toast.success("OTP sent to your email.")
+      if (data.devOtp) {
+        setOtp(data.devOtp)
+        toast.success(`Dev OTP generated: ${data.devOtp}`)
+      } else {
+        toast.success("OTP sent to your email.")
+      }
     } else {
       setError(data.error || "Failed to send OTP")
     }

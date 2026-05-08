@@ -1,5 +1,9 @@
 import nodemailer from "nodemailer";
 
+export function canSendEmail() {
+  return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+}
+
 function getTransporter() {
   const host = process.env.SMTP_HOST;
   const port = Number(process.env.SMTP_PORT || 587);
@@ -34,9 +38,19 @@ export async function sendEmail(to: string, subject: string, html: string) {
   });
 }
 
-export async function sendOtpEmail(to: string, code: string, purpose: "signup" | "delete-account") {
-  const subject = purpose === "signup" ? "Your JobPulse signup verification code" : "Your JobPulse account deletion code";
-  const actionText = purpose === "signup" ? "complete signup" : "confirm account deletion";
+export async function sendOtpEmail(to: string, code: string, purpose: "signup" | "delete-account" | "forgot-password") {
+  const subject =
+    purpose === "signup"
+      ? "Your JobPulse signup verification code"
+      : purpose === "delete-account"
+      ? "Your JobPulse account deletion code"
+      : "Your JobPulse password reset code";
+  const actionText =
+    purpose === "signup"
+      ? "complete signup"
+      : purpose === "delete-account"
+      ? "confirm account deletion"
+      : "reset your password";
   const html = `
     <div style="font-family: Arial, sans-serif; line-height:1.6; color:#111;">
       <h2 style="margin:0 0 12px;">JobPulse Security Verification</h2>
