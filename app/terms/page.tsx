@@ -7,7 +7,7 @@ export default function TermsPage() {
         <div className="space-y-3">
           <h1 className="text-3xl font-bold text-foreground">Terms of Use</h1>
           <p className="text-muted-foreground">
-            By using JobPulse, you agree to the following terms and responsible-use expectations.
+            By using KAIRO, you agree to the following terms and responsible-use expectations.
           </p>
           <Link href="/" className="text-sm text-primary hover:underline">
             ← Back to Home
@@ -18,7 +18,7 @@ export default function TermsPage() {
           <section>
             <h2 className="mb-2 text-base font-semibold text-foreground">Service scope</h2>
             <p>
-              JobPulse helps users track public career pages and receive job alerts. We do not guarantee job availability,
+              KAIRO helps users track public career pages and receive job alerts. We do not guarantee job availability,
               hiring outcomes, or uninterrupted third-party website access.
             </p>
           </section>

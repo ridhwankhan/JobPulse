@@ -68,6 +68,17 @@ export function DashboardClient({
       <Header title="Overview" description="Monitor your job tracking activity" />
 
       <div className="p-6 space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3"
+        >
+          <p className="text-sm font-medium text-primary">
+            KAIRO means <span className="text-foreground">path</span> — keep moving, one opportunity at a time.
+          </p>
+        </motion.div>
+
         {/* Stats Grid — real data only */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <StatsCard

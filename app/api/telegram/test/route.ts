@@ -25,7 +25,7 @@ export async function POST() {
 
     await sendJobAlert(
       "Software Engineer (Test Alert)",
-      "Job Pulse (Telegram Test)",
+      "KAIRO (Telegram Test)",
       `${process.env.NEXT_PUBLIC_APP_URL || "https://example.com"}/dashboard/jobs`,
       user.telegramChatId
     );

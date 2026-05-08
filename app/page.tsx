@@ -128,7 +128,7 @@ export default function LandingPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <Briefcase className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="text-lg font-semibold text-foreground">JobPulse</span>
+            <span className="text-lg font-semibold text-foreground">KAIRO</span>
           </div>
 
           <div className="hidden items-center gap-8 md:flex">
@@ -501,12 +501,12 @@ export default function LandingPage() {
                 <Briefcase className="h-4 w-4 text-primary-foreground" />
               </div>
               <span className="text-lg font-semibold text-foreground">
-                JobPulse
+                KAIRO
               </span>
             </div>
 
             <p className="text-sm text-muted-foreground">
-              © 2026 JobPulse. All rights reserved.
+              © 2026 KAIRO. All rights reserved.
             </p>
 
             <div className="flex items-center gap-6">

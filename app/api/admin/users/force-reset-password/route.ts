@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   if (canSendEmail()) {
     await sendEmail(
       user.email,
-      "Your JobPulse password was reset by admin",
+      "Your KAIRO password was reset by admin",
       `<div style="font-family:Arial,sans-serif;line-height:1.6">
         <p>Your account password was reset by an administrator.</p>
         <p><strong>Temporary password:</strong> ${String(newPassword)}</p>

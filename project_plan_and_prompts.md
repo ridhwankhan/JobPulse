@@ -1,6 +1,6 @@
-# Job Pulse - Version 1 Execution Plan & Prompts
+# KAIRO - Version 1 Execution Plan & Prompts
 
-This document outlines the execution plan to build Version 1 of Job Pulse, ensuring the website is functional and ready to be live on the internet. 
+This document outlines the execution plan to build Version 1 of KAIRO, ensuring the website is functional and ready to be live on the internet. 
 
 To maximize efficiency and avoid merge conflicts, the project is divided into two independent tracks for **Person 1 (Frontend/UI)** and **Person 2 (Backend/Scraping/Database)**.
 

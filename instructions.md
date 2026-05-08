@@ -1,6 +1,6 @@
-# Developer & AI Instructions for Job Pulse
+# Developer & AI Instructions for KAIRO
 
-This document outlines the standard operating procedures and guidelines for developers and AI agents working on the **Job Pulse** project. **READ THIS FILE before making any code modifications or executing prompts.**
+This document outlines the standard operating procedures and guidelines for developers and AI agents working on the **KAIRO** project. **READ THIS FILE before making any code modifications or executing prompts.**
 
 ## 1. Golden Rules (Do Not Break)
 

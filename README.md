@@ -1,4 +1,4 @@
-# 🔍 Job Pulse
+# 🔍 KAIRO
 
 > **An intelligent, real-time job monitoring platform that scrapes career pages and delivers instant Telegram alerts — so you never miss a job opening again.**
 
@@ -10,11 +10,11 @@
 
 ---
 
-## 📖 What is Job Pulse?
+## 📖 What is KAIRO?
 
-Job Pulse is a full-stack job monitoring system built for job seekers who want to stay ahead. You add the career pages of companies you want to watch, and Job Pulse automatically scrapes those pages in the background. The moment a new job link appears — matching roles like *Software Engineer*, *Data Analyst*, *MTO*, *Management Trainee*, or *Corporate Officer* — you instantly receive a notification directly in your personal Telegram account.
+KAIRO is a full-stack job monitoring system built for job seekers who want to stay ahead. You add the career pages of companies you want to watch, and KAIRO automatically scrapes those pages in the background. The moment a new job link appears — matching roles like *Software Engineer*, *Data Analyst*, *MTO*, *Management Trainee*, or *Corporate Officer* — you instantly receive a notification directly in your personal Telegram account.
 
-**No more manually refreshing career pages. No more missing deadlines. Job Pulse watches for you.**
+**No more manually refreshing career pages. No more missing deadlines. KAIRO watches for you.**
 
 ---
 
@@ -72,7 +72,7 @@ Job Pulse is a full-stack job monitoring system built for job seekers who want t
 ## 📁 Project Structure
 
 ```
-Job pulse/
+KAIRO/
 ├── app/                          # Next.js App Router
 │   ├── page.tsx                  # Landing page
 │   ├── layout.tsx                # Root layout
@@ -203,7 +203,7 @@ SMTP_PORT="587"
 SMTP_SECURE="false"
 SMTP_USER="your-email@gmail.com"
 SMTP_PASS="your-app-password"
-SMTP_FROM="JobPulse <your-email@gmail.com>"
+SMTP_FROM="KAIRO <your-email@gmail.com>"
 ```
 
 > ⚠️ **Special Character Warning:** If your database password contains `#`, encode it as `%23` in the URL (e.g., `password123#` → `password123%23`).
@@ -244,7 +244,7 @@ python scraper/main.py
 
 ## ⏱️ Auto Scrape (Daily on Free Plan)
 
-Job Pulse now includes a built-in cron endpoint: `GET /api/cron/scrape`.
+KAIRO now includes a built-in cron endpoint: `GET /api/cron/scrape`.
 
 - Add `CRON_SECRET` in your deployment environment variables.
 - Keep `vercel.json` in the repo with:
@@ -292,8 +292,8 @@ If you deploy on another platform, set any scheduler (cron/job runner) to call:
 Each user connects their own personal Telegram for alerts:
 
 1. Open Telegram → Search `@userinfobot` → Start chat → Copy your **numeric ID**
-2. Open Telegram → Search your bot (e.g. `@JobPulseAlertsBot`) → Click **Start**
-3. Go to your Job Pulse Dashboard → **Telegram** page
+2. Open Telegram → Search your bot (e.g. `@Kairo_Job_bot`) → Click **Start**
+3. Go to your KAIRO Dashboard → **Telegram** page
 4. Click **Connect Telegram** → Paste your Chat ID → Click **Save & Connect**
 
 ✅ From now on, every new job found for your tracked URLs will ping YOUR Telegram instantly.

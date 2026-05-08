@@ -230,7 +230,7 @@ if __name__ == "__main__":
     import urllib3
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    print("--- Job Pulse Scraper ---")
+    print("--- KAIRO Scraper ---")
     pages = fetch_tracked_urls()
 
     if not pages:

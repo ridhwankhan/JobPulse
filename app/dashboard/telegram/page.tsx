@@ -210,7 +210,7 @@ export default function TelegramPage() {
                             </li>
                             <li className="flex gap-3">
                               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground font-bold">3</span>
-                              <span>Also start a chat with our bot <strong className="text-foreground">@job_pulse_notification_bot</strong> and click <strong className="text-foreground">Start</strong></span>
+                              <span>Also start a chat with our bot <strong className="text-foreground">@Kairo_Job_bot</strong> and click <strong className="text-foreground">Start</strong></span>
                             </li>
                             <li className="flex gap-3">
                               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground font-bold">4</span>

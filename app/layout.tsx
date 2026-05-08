@@ -11,7 +11,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'JobPulse - AI Job Monitoring & Notifications',
+  title: 'KAIRO - AI Job Monitoring & Notifications',
   description: 'Track job postings from your favorite career pages and get instant Telegram notifications for new opportunities.',
   generator: 'v0.app',
   icons: {

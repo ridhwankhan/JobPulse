@@ -7,7 +7,7 @@ export default function PrivacyPage() {
         <div className="space-y-3">
           <h1 className="text-3xl font-bold text-foreground">Privacy Policy</h1>
           <p className="text-muted-foreground">
-            We respect your privacy. This page explains what JobPulse stores and how it is used.
+            We respect your privacy. This page explains what KAIRO stores and how it is used.
           </p>
           <Link href="/" className="text-sm text-primary hover:underline">
             ← Back to Home
@@ -18,7 +18,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="mb-2 text-base font-semibold text-foreground">What we collect</h2>
             <p>
-              JobPulse stores account email, hashed password, tracked URLs, user preferences, optional Telegram chat ID,
+              KAIRO stores account email, hashed password, tracked URLs, user preferences, optional Telegram chat ID,
               and generated job listing records.
             </p>
           </section>
