@@ -3,6 +3,19 @@ import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { createSession } from "@/lib/session";
 
+function mapAuthError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+
+  if (message.includes("P1001")) {
+    return "Database connection failed. Check Vercel DATABASE_URL/DIRECT_URL and Supabase status.";
+  }
+  if (message.includes("P2021")) {
+    return "Database schema is outdated. Run `npx prisma db push` against production database.";
+  }
+
+  return "Internal server error";
+}
+
 export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
@@ -45,6 +58,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error("Signin error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: mapAuthError(error) }, { status: 500 });
   }
 }
