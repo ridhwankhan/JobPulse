@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id             String           @id @default(cuid())
+  email          String           @unique
+  passwordHash   String
+  trackedPages   TrackedJobPage[]
+  createdAt      DateTime         @default(now())
+}
+
+model TrackedJobPage {
+  id          String       @id @default(cuid())
+  url         String
+  companyName String
+  lastScraped DateTime?
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobs        JobListing[]
+  createdAt   DateTime     @default(now())
+}
+
+model JobListing {
+  id            String         @id @default(cuid())
+  title         String
+  url           String         @unique
+  trackedPageId String
+  trackedPage   TrackedJobPage @relation(fields: [trackedPageId], references: [id], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+}
