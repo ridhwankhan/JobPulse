@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { canSendEmail, sendOtpEmail } from "@/lib/email";
-import { createOtp } from "@/lib/otp";
 
 export async function POST(req: Request) {
   try {
@@ -18,31 +16,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No account found for this email." }, { status: 404 });
     }
 
-    const { code } = await createOtp({
-      email: user.email,
-      purpose: "forgot-password",
-      userId: user.id,
+    return NextResponse.json({
+      success: true,
+      prompts: [
+        user.recoveryPrompt1 || "Recovery prompt 1 is not set.",
+        user.recoveryPrompt2 || "Recovery prompt 2 is not set.",
+      ],
     });
-
-    if (canSendEmail()) {
-      await sendOtpEmail(user.email, code, "forgot-password");
-      return NextResponse.json({ success: true });
-    }
-
-    if (process.env.NODE_ENV !== "production") {
-      return NextResponse.json({
-        success: true,
-        devOtp: code,
-        warning: "SMTP is not configured. Using development OTP fallback.",
-      });
-    }
-
-    return NextResponse.json(
-      { error: "SMTP is not configured on the server. OTP email cannot be sent." },
-      { status: 500 }
-    );
   } catch (error: any) {
-    console.error("Request password reset OTP error:", error);
-    return NextResponse.json({ error: error.message || "Failed to send OTP" }, { status: 500 });
+    console.error("Request password reset prompts error:", error);
+    return NextResponse.json({ error: error.message || "Failed to load recovery prompts" }, { status: 500 });
   }
 }

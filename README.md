@@ -197,7 +197,7 @@ CRON_SECRET="a_long_random_secret_value"
 # Admin account email (required)
 ADMIN_EMAIL="admin@example.com"
 
-# SMTP for OTP + admin messaging
+# SMTP for admin messaging (optional but recommended)
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT="587"
 SMTP_SECURE="false"
@@ -260,17 +260,15 @@ If you deploy on another platform, set any scheduler (cron/job runner) to call:
 
 ---
 
-## 🔐 OTP + Admin Features
+## 🔐 Account Recovery + Admin Features
 
-- Signup now requires email OTP:
-  - `POST /api/auth/request-signup-otp`
-  - `POST /api/auth/verify-signup-otp`
-- Forgot password via OTP:
+- Signup now collects two user-defined recovery prompts + answers.
+- Forgot password uses those saved recovery prompts:
   - `POST /api/auth/request-password-reset-otp`
   - `POST /api/auth/verify-password-reset-otp`
-- Account deletion now requires OTP:
-  - `POST /api/user/account/request-delete-otp`
-  - `POST /api/user/account/verify-delete-otp`
+- Account deletion now requires:
+  - current password
+  - typing `DELETE` confirmation text
 - Admin dashboard:
   - URL: `/dashboard/admin`
   - Access is restricted to `ADMIN_EMAIL`
@@ -320,11 +318,11 @@ The Python scraper (`scraper/main.py`) runs these steps:
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| `POST` | `/api/auth/request-signup-otp` | Request signup OTP by email | ❌ |
-| `POST` | `/api/auth/verify-signup-otp` | Verify OTP and create account | ❌ |
-| `POST` | `/api/auth/request-password-reset-otp` | Request password reset OTP | ❌ |
-| `POST` | `/api/auth/verify-password-reset-otp` | Verify OTP and reset password | ❌ |
+| `POST` | `/api/auth/signup` | Direct signup with recovery prompts + answers | ❌ |
+| `POST` | `/api/auth/request-password-reset-otp` | Load saved recovery prompts for email | ❌ |
+| `POST` | `/api/auth/verify-password-reset-otp` | Verify prompt answers and reset password | ❌ |
 | `POST` | `/api/auth/signin` | Login, sets session cookie | ❌ |
+| `DELETE` | `/api/user/account` | Delete account (requires password + `DELETE`) | ✅ |
 | `POST` | `/api/scrape` | Scrape all user's URLs, send alerts | ✅ |
 | `GET` | `/api/user/telegram` | Get current user's Telegram Chat ID | ✅ |
 | `POST` | `/api/user/telegram` | Save user's Telegram Chat ID | ✅ |
@@ -375,7 +373,7 @@ The Python scraper (`scraper/main.py`) runs these steps:
 - Passwords are hashed with **bcrypt** (10 salt rounds) — never stored in plain text.
 - Sessions use **signed JWT tokens** (HS256) stored in `httpOnly` cookies.
 - All dashboard routes are protected by `middleware.ts` — unauthenticated requests are redirected.
-- OTP codes are hashed before storage and expire automatically.
+- Recovery answers are hashed before storage and never exposed as plain text.
 - Accounts can be banned/restricted from admin dashboard.
 - Basic per-IP API rate limiting is enabled in middleware to reduce abuse/spam bursts.
 - `.env` and other local secret files are git-ignored — never commit credentials.

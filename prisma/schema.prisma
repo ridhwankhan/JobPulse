@@ -12,6 +12,10 @@ model User {
   id             String           @id @default(cuid())
   email          String           @unique
   passwordHash   String
+  recoveryPrompt1 String?
+  recoveryPrompt2 String?
+  recoveryAnswerHash1 String?
+  recoveryAnswerHash2 String?
   isEmailVerified Boolean         @default(false)
   isBanned       Boolean          @default(false)
   isRestricted   Boolean          @default(false)
@@ -19,7 +23,6 @@ model User {
   telegramChatId String?
   trackedPages   TrackedJobPage[]
   preferences    UserPreferences?
-  otps           EmailOtp[]
   createdAt      DateTime         @default(now())
 }
 
@@ -56,21 +59,6 @@ model UserPreferences {
   jobType         String   @default("any")
   instantAlerts   Boolean  @default(true)
   updatedAt       DateTime @updatedAt
-}
-
-model EmailOtp {
-  id           String   @id @default(cuid())
-  email        String
-  codeHash     String
-  purpose      String
-  expiresAt    DateTime
-  consumedAt   DateTime?
-  attempts     Int      @default(0)
-  userId       String?
-  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
-
-  @@index([email, purpose, expiresAt])
 }
 
 model AppSetting {

@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
-import { verifyOtp } from "@/lib/otp";
 
 export async function POST(req: Request) {
   try {
-    const { email, otp, newPassword } = await req.json();
+    const { email, answer1, answer2, newPassword } = await req.json();
     const normalizedEmail = String(email || "").trim().toLowerCase();
-    const code = String(otp || "").trim();
+    const a1 = String(answer1 || "").trim().toLowerCase();
+    const a2 = String(answer2 || "").trim().toLowerCase();
     const password = String(newPassword || "");
 
-    if (!normalizedEmail || !code || !password) {
-      return NextResponse.json({ error: "Email, OTP and new password are required." }, { status: 400 });
+    if (!normalizedEmail || !a1 || !a2 || !password) {
+      return NextResponse.json({ error: "Email, both answers, and new password are required." }, { status: 400 });
     }
 
     const user = await db.user.findFirst({
@@ -20,14 +20,17 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json({ error: "No account found for this email." }, { status: 404 });
     }
+    if (!user.recoveryAnswerHash1 || !user.recoveryAnswerHash2) {
+      return NextResponse.json(
+        { error: "Recovery info is not configured for this account. Please contact admin." },
+        { status: 400 }
+      );
+    }
 
-    const result = await verifyOtp({
-      email: user.email,
-      purpose: "forgot-password",
-      code,
-    });
-    if (!result.ok) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
+    const match1 = await bcrypt.compare(a1, user.recoveryAnswerHash1);
+    const match2 = await bcrypt.compare(a2, user.recoveryAnswerHash2);
+    if (!match1 || !match2) {
+      return NextResponse.json({ error: "Recovery answers do not match." }, { status: 400 });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);

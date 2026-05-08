@@ -13,7 +13,6 @@ async function main() {
   await db.jobListing.deleteMany();
   await db.trackedJobPage.deleteMany();
   await db.userPreferences.deleteMany();
-  await db.emailOtp.deleteMany();
   await db.appSetting.deleteMany();
   await db.user.deleteMany();
 

@@ -12,13 +12,16 @@ import { Label } from "@/components/ui/label";
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
+  const [prompt1, setPrompt1] = useState("");
+  const [prompt2, setPrompt2] = useState("");
+  const [answer1, setAnswer1] = useState("");
+  const [answer2, setAnswer2] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [otpRequested, setOtpRequested] = useState(false);
+  const [promptsLoaded, setPromptsLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const requestOtp = async (e: React.FormEvent) => {
+  const loadPrompts = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -30,16 +33,13 @@ export default function ForgotPasswordPage() {
     const data = await res.json();
     setLoading(false);
     if (!res.ok) {
-      setError(data.error || "Failed to send OTP.");
+      setError(data.error || "Failed to load recovery prompts.");
       return;
     }
-    setOtpRequested(true);
-    if (data.devOtp) {
-      setOtp(data.devOtp);
-      toast.success(`Dev OTP generated: ${data.devOtp}`);
-    } else {
-      toast.success("Password reset OTP sent to your email.");
-    }
+    setPrompt1(data.prompts?.[0] || "Recovery prompt 1 is not set.");
+    setPrompt2(data.prompts?.[1] || "Recovery prompt 2 is not set.");
+    setPromptsLoaded(true);
+    toast.success("Recovery prompts loaded.");
   };
 
   const resetPassword = async (e: React.FormEvent) => {
@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
     const res = await fetch("/api/auth/verify-password-reset-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, otp, newPassword }),
+      body: JSON.stringify({ email, answer1, answer2, newPassword }),
     });
     const data = await res.json();
     setLoading(false);
@@ -67,10 +67,10 @@ export default function ForgotPasswordPage() {
         <CardHeader className="space-y-2 pb-2">
           <CardTitle className="text-2xl">Forgot Password</CardTitle>
           <CardDescription className="leading-6">
-            {otpRequested ? "Enter OTP and set a new password." : "Request an OTP to reset your password."}
+            {promptsLoaded ? "Answer your recovery prompts to set a new password." : "Load your recovery prompts first."}
           </CardDescription>
         </CardHeader>
-        <form onSubmit={otpRequested ? resetPassword : requestOtp}>
+        <form onSubmit={promptsLoaded ? resetPassword : loadPrompts}>
           <CardContent className="space-y-5">
             {error && <div className="text-sm font-medium text-red-500">{error}</div>}
             <div className="space-y-2">
@@ -81,14 +81,18 @@ export default function ForgotPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={otpRequested}
+                disabled={promptsLoaded}
               />
             </div>
-            {otpRequested && (
+            {promptsLoaded && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="otp">OTP</Label>
-                  <Input id="otp" value={otp} onChange={(e) => setOtp(e.target.value)} required />
+                  <Label htmlFor="answer1">{prompt1}</Label>
+                  <Input id="answer1" value={answer1} onChange={(e) => setAnswer1(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="answer2">{prompt2}</Label>
+                  <Input id="answer2" value={answer2} onChange={(e) => setAnswer2(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="new-password">New Password</Label>
@@ -105,16 +109,17 @@ export default function ForgotPasswordPage() {
           </CardContent>
           <CardFooter className="flex flex-col gap-4 pt-2">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Please wait..." : otpRequested ? "Verify OTP & Reset Password" : "Send Reset OTP"}
+              {loading ? "Please wait..." : promptsLoaded ? "Verify Answers & Reset Password" : "Load Recovery Prompts"}
             </Button>
-            {otpRequested && (
+            {promptsLoaded && (
               <Button
                 type="button"
                 variant="outline"
                 className="w-full"
                 onClick={() => {
-                  setOtpRequested(false);
-                  setOtp("");
+                  setPromptsLoaded(false);
+                  setAnswer1("");
+                  setAnswer2("");
                   setNewPassword("");
                 }}
               >

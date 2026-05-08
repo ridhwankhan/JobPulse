@@ -40,9 +40,8 @@ export function Header({ title, description }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [deleteOtp, setDeleteOtp] = useState("")
-  const [otpSent, setOtpSent] = useState(false)
-  const [sendingOtp, setSendingOtp] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [confirmDeleteText, setConfirmDeleteText] = useState("")
 
   useEffect(() => {
     setMounted(true)
@@ -60,40 +59,24 @@ export function Header({ title, description }: HeaderProps) {
     router.refresh()
   }
 
-  const handleRequestDeleteOtp = async () => {
-    setSendingOtp(true)
-    try {
-      const res = await fetch("/api/user/account/request-delete-otp", { method: "POST" })
-      const data = await res.json()
-      if (!res.ok) {
-        toast.error(data.error || "Failed to send OTP")
-        return
-      }
-      setOtpSent(true)
-      if (data.devOtp) {
-        setDeleteOtp(data.devOtp)
-        toast.success(`Dev OTP generated: ${data.devOtp}`)
-      } else {
-        toast.success("OTP sent to your email address.")
-      }
-    } catch {
-      toast.error("Something went wrong")
-    } finally {
-      setSendingOtp(false)
-    }
-  }
-
   const handleDeleteAccount = async () => {
-    if (!deleteOtp.trim()) {
-      toast.error("Enter the OTP from your email")
+    if (!currentPassword.trim()) {
+      toast.error("Enter your current password")
+      return
+    }
+    if (confirmDeleteText.trim().toUpperCase() !== "DELETE") {
+      toast.error("Type DELETE to confirm")
       return
     }
     setIsDeleting(true)
     try {
-      const res = await fetch("/api/user/account/verify-delete-otp", {
-        method: "POST",
+      const res = await fetch("/api/user/account", {
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ otp: deleteOtp.trim() }),
+        body: JSON.stringify({
+          currentPassword: currentPassword.trim(),
+          confirmText: confirmDeleteText.trim(),
+        }),
       })
       const data = await res.json()
       if (res.ok) {
@@ -113,9 +96,8 @@ export function Header({ title, description }: HeaderProps) {
   const handleDeleteOpenChange = (open: boolean) => {
     setDeleteOpen(open)
     if (!open) {
-      setDeleteOtp("")
-      setOtpSent(false)
-      setSendingOtp(false)
+      setCurrentPassword("")
+      setConfirmDeleteText("")
       setIsDeleting(false)
     }
   }
@@ -208,40 +190,34 @@ export function Header({ title, description }: HeaderProps) {
       <AlertDialog open={deleteOpen} onOpenChange={handleDeleteOpenChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Account (OTP Verification)</AlertDialogTitle>
+            <AlertDialogTitle>Delete Account Confirmation</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently delete your account, all tracked URLs, and all job listings.
               This action <strong>cannot be undone</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          {otpSent && (
-            <div className="space-y-2">
-              <Input
-                placeholder="Enter OTP from your email"
-                value={deleteOtp}
-                onChange={(e) => setDeleteOtp(e.target.value)}
-              />
-            </div>
-          )}
+          <div className="space-y-3">
+            <Input
+              type="password"
+              placeholder="Enter current password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+            <Input
+              placeholder='Type "DELETE" to confirm'
+              value={confirmDeleteText}
+              onChange={(e) => setConfirmDeleteText(e.target.value)}
+            />
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            {!otpSent ? (
-              <AlertDialogAction
-                onClick={handleRequestDeleteOtp}
-                disabled={sendingOtp}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {sendingOtp ? "Sending OTP..." : "Send OTP"}
-              </AlertDialogAction>
-            ) : (
-              <AlertDialogAction
-                onClick={handleDeleteAccount}
-                disabled={isDeleting}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {isDeleting ? "Deleting..." : "Verify OTP & Delete"}
-              </AlertDialogAction>
-            )}
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "Deleting..." : "Delete My Account"}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
