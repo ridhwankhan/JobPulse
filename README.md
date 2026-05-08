@@ -193,6 +193,17 @@ TELEGRAM_BOT_TOKEN="your_bot_token"
 
 # Secure scheduled scraping (required for /api/cron/scrape)
 CRON_SECRET="a_long_random_secret_value"
+
+# Admin account email (defaults to ridhwankhan03@gmail.com)
+ADMIN_EMAIL="ridhwankhan03@gmail.com"
+
+# SMTP for OTP + admin messaging
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_SECURE="false"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-app-password"
+SMTP_FROM="JobPulse <your-email@gmail.com>"
 ```
 
 > ⚠️ **Special Character Warning:** If your database password contains `#`, encode it as `%23` in the URL (e.g., `password123#` → `password123%23`).
@@ -246,6 +257,24 @@ If you deploy on another platform, set any scheduler (cron/job runner) to call:
 
 - URL: `https://<your-domain>/api/cron/scrape`
 - Header: `Authorization: Bearer <CRON_SECRET>`
+
+---
+
+## 🔐 OTP + Admin Features
+
+- Signup now requires email OTP:
+  - `POST /api/auth/request-signup-otp`
+  - `POST /api/auth/verify-signup-otp`
+- Account deletion now requires OTP:
+  - `POST /api/user/account/request-delete-otp`
+  - `POST /api/user/account/verify-delete-otp`
+- Admin dashboard:
+  - URL: `/dashboard/admin`
+  - Access is restricted to `ADMIN_EMAIL`
+  - Controls:
+    - Toggle signup open/maintenance
+    - View user details
+    - Send email to one user or broadcast to all users
 
 ---
 

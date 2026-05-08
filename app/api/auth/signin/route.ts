@@ -6,13 +6,19 @@ import { createSession } from "@/lib/session";
 export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
+    const normalizedEmail = String(email || "").trim().toLowerCase();
 
-    if (!email || !password) {
+    if (!normalizedEmail || !password) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    const user = await db.user.findUnique({
-      where: { email },
+    const user = await db.user.findFirst({
+      where: {
+        email: {
+          equals: normalizedEmail,
+          mode: "insensitive",
+        },
+      },
     });
 
     if (!user) {

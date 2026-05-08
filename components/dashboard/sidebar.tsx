@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { 
   LayoutDashboard, 
@@ -10,7 +11,8 @@ import {
   Bell, 
   Send,
   Briefcase,
-  ChevronRight
+  ChevronRight,
+  Shield
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -49,6 +51,18 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    fetch("/api/admin/me")
+      .then((r) => r.json())
+      .then((data) => setIsAdmin(Boolean(data.isAdmin)))
+      .catch(() => setIsAdmin(false))
+  }, [])
+
+  const renderedItems = isAdmin
+    ? [...navItems, { title: "Admin", href: "/dashboard/admin", icon: Shield }]
+    : navItems
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-sidebar">
@@ -63,7 +77,7 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 p-4">
-          {navItems.map((item) => {
+          {renderedItems.map((item) => {
             const isActive = pathname === item.href
             return (
               <Link

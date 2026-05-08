@@ -40,6 +40,9 @@ export function Header({ title, description }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteOtp, setDeleteOtp] = useState("")
+  const [otpSent, setOtpSent] = useState(false)
+  const [sendingOtp, setSendingOtp] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -57,22 +60,58 @@ export function Header({ title, description }: HeaderProps) {
     router.refresh()
   }
 
+  const handleRequestDeleteOtp = async () => {
+    setSendingOtp(true)
+    try {
+      const res = await fetch("/api/user/account/request-delete-otp", { method: "POST" })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data.error || "Failed to send OTP")
+        return
+      }
+      setOtpSent(true)
+      toast.success("OTP sent to your email address.")
+    } catch {
+      toast.error("Something went wrong")
+    } finally {
+      setSendingOtp(false)
+    }
+  }
+
   const handleDeleteAccount = async () => {
+    if (!deleteOtp.trim()) {
+      toast.error("Enter the OTP from your email")
+      return
+    }
     setIsDeleting(true)
     try {
-      const res = await fetch("/api/user/account", { method: "DELETE" })
+      const res = await fetch("/api/user/account/verify-delete-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ otp: deleteOtp.trim() }),
+      })
+      const data = await res.json()
       if (res.ok) {
         toast.success("Account deleted")
         router.push("/")
         router.refresh()
       } else {
-        toast.error("Failed to delete account")
+        toast.error(data.error || "Failed to delete account")
       }
     } catch {
       toast.error("Something went wrong")
     } finally {
       setIsDeleting(false)
-      setDeleteOpen(false)
+    }
+  }
+
+  const handleDeleteOpenChange = (open: boolean) => {
+    setDeleteOpen(open)
+    if (!open) {
+      setDeleteOtp("")
+      setOtpSent(false)
+      setSendingOtp(false)
+      setIsDeleting(false)
     }
   }
 
@@ -161,24 +200,43 @@ export function Header({ title, description }: HeaderProps) {
       </header>
 
       {/* Delete Account Confirmation Dialog */}
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+      <AlertDialog open={deleteOpen} onOpenChange={handleDeleteOpenChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+            <AlertDialogTitle>Delete Account (OTP Verification)</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently delete your account, all tracked URLs, and all job listings.
               This action <strong>cannot be undone</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {otpSent && (
+            <div className="space-y-2">
+              <Input
+                placeholder="Enter OTP from your email"
+                value={deleteOtp}
+                onChange={(e) => setDeleteOtp(e.target.value)}
+              />
+            </div>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteAccount}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeleting ? "Deleting..." : "Yes, Delete My Account"}
-            </AlertDialogAction>
+            {!otpSent ? (
+              <AlertDialogAction
+                onClick={handleRequestDeleteOtp}
+                disabled={sendingOtp}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {sendingOtp ? "Sending OTP..." : "Send OTP"}
+              </AlertDialogAction>
+            ) : (
+              <AlertDialogAction
+                onClick={handleDeleteAccount}
+                disabled={isDeleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {isDeleting ? "Deleting..." : "Verify OTP & Delete"}
+              </AlertDialogAction>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
