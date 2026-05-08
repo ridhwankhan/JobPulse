@@ -6,12 +6,22 @@ import { createSession } from "@/lib/session";
 
 function mapAuthError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
+  const prismaCode =
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof (error as { code?: unknown }).code === "string"
+      ? (error as { code: string }).code
+      : "";
 
-  if (message.includes("P1001")) {
+  if (message.includes("P1001") || prismaCode === "P1001") {
     return "Database connection failed. Check Vercel DATABASE_URL/DIRECT_URL and Supabase status.";
   }
-  if (message.includes("P2021")) {
+  if (message.includes("P2021") || prismaCode === "P2021") {
     return "Database schema is outdated. Run `npx prisma db push` against production database.";
+  }
+  if (message.includes("P2022") || prismaCode === "P2022") {
+    return "Database column mismatch. Run `npx prisma db push` against production database.";
   }
 
   return "Internal server error";
@@ -40,8 +50,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const existingUser = await db.user.findFirst({
-      where: { email: { equals: normalizedEmail, mode: "insensitive" } },
+    const existingUser = await db.user.findUnique({
+      where: { email: normalizedEmail },
     });
     if (existingUser) {
       return NextResponse.json({ error: "User already exists" }, { status: 400 });
