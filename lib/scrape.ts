@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio";
 import { db } from "@/lib/db";
 import { sendJobAlert } from "@/lib/telegram";
+import { getAdminEmail } from "@/lib/admin";
 
 export const DEFAULT_KEYWORDS = [
   "engineer",
@@ -237,7 +238,13 @@ export async function runScrapeForUser(userId: string, singlePageId?: string) {
 export async function runScrapeForAllUsers() {
   const users = await db.user.findMany({
     where: { trackedPages: { some: {} } },
-    select: { id: true },
+    select: { id: true, email: true },
+  });
+  const adminEmail = getAdminEmail();
+  users.sort((a, b) => {
+    const aIsAdmin = a.email.toLowerCase() === adminEmail ? 1 : 0;
+    const bIsAdmin = b.email.toLowerCase() === adminEmail ? 1 : 0;
+    return bIsAdmin - aIsAdmin;
   });
 
   const results: Awaited<ReturnType<typeof runScrapeForUser>>[] = [];

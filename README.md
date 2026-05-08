@@ -242,16 +242,22 @@ python scraper/main.py
 
 ---
 
-## ⏱️ Auto Scrape Every 12 Hours (Deployment)
+## ⏱️ Auto Scrape (Daily on Free Plan)
 
 Job Pulse now includes a built-in cron endpoint: `GET /api/cron/scrape`.
 
 - Add `CRON_SECRET` in your deployment environment variables.
 - Keep `vercel.json` in the repo with:
   - `path`: `/api/cron/scrape`
-  - `schedule`: `0 */12 * * *`
-- Vercel Cron will call this route every 12 hours.
+  - `schedule`: `0 9 * * *`
+- Vercel Hobby supports once-daily cron. This schedule runs once per day.
 - The route scrapes **all users** who have tracked pages and sends Telegram alerts to each user's own chat ID.
+- Admin account is prioritized first in scheduled scrape order.
+
+### Manual Scrape Cooldown
+
+- Normal users: manual scrape allowed once every **20 minutes**.
+- Admin user: **no manual scrape cooldown**.
 
 If you deploy on another platform, set any scheduler (cron/job runner) to call:
 
