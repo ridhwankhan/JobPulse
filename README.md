@@ -395,18 +395,7 @@ Before pushing to GitHub:
    - `rg "postgresql://|TELEGRAM_BOT_TOKEN|SMTP_PASS|JWT_SECRET|sb_publishable_" .`
 3. Use env variables for all runtime secrets:
    - DB, JWT, Telegram bot token, SMTP, admin email, cron secret.
-
----
-
-## 👥 Development Team
-
-| Person | Role |
-|--------|------|
-| **Person 1** | Frontend → Database, Auth, Dashboard Integration (Next.js + Prisma) |
-| **Person 2** | Backend → Python Scraper, Telegram Bot, API Integration |
-
-Both developers work on **parallel, non-blocking tracks**. See `project_plan_and_prompts.md` for the full execution plan.
-
+   - 
 ---
 
 ## 📜 License
