@@ -85,18 +85,6 @@ const founder = {
   ],
 }
 
-const contributor = {
-  name: "Intisar Rahman Khan",
-  title: "Contributor",
-  summary:
-    "I’m a Software Engineering student passionate about full-stack development, AI-powered applications, and scalable software systems. I have experience with C++, Java, Python, Django, Flutter, FastAPI, and modern web technologies to build efficient and user-focused applications. Alongside software development, I also work with photography, photo editing, and video editing, combining creativity with technology to create impactful digital experiences.",
-  links: [
-    { label: "Portfolio", href: "https://intisarrahmankhan.github.io/", icon: ExternalLink },
-    { label: "GitHub", href: "https://github.com/intisarrahmankhan", icon: Github },
-    { label: "LinkedIn", href: "https://www.linkedin.com/in/intisar-rahman-khan-909044372/", icon: Linkedin },
-  ],
-}
-
 export default function LandingPage() {
   const [email, setEmail] = useState("")
   const [grayscaleMode, setGrayscaleMode] = useState(false)
@@ -388,7 +376,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* About & Team */}
+      {/* About */}
       <section id="about-team" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-14 text-center">
@@ -398,7 +386,7 @@ export default function LandingPage() {
               viewport={{ once: true }}
               className="text-3xl font-bold text-foreground sm:text-4xl"
             >
-              About The Team
+              About KAIRO
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -407,84 +395,61 @@ export default function LandingPage() {
               transition={{ delay: 0.1 }}
               className="mt-4 text-lg text-muted-foreground"
             >
-              Built by engineers who care about practical, secure, and user-friendly job discovery.
+              KAIRO helps you monitor career pages and get instant Telegram alerts when new roles match your interest.
             </motion.p>
           </div>
 
-          <div className="space-y-12">
-            <div>
-              <h3 className="mb-6 text-center text-2xl font-semibold text-foreground">Contributor</h3>
-              <div className="grid gap-6 lg:grid-cols-2">
-                {[contributor].map((person, index) => (
-                  <motion.div
-                    key={person.name}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                    className="rounded-2xl border border-border bg-card p-6"
-                  >
-                    <h3 className="text-xl font-semibold text-foreground">{person.name}</h3>
-                    <p className="mt-1 text-sm text-primary">{person.title}</p>
-                    {"location" in person && person.location && (
-                      <p className="mt-2 text-sm text-muted-foreground">{person.location}</p>
-                    )}
-                    <p className="mt-4 text-sm leading-6 text-muted-foreground">{person.summary}</p>
-                    <div className="mt-5 flex flex-wrap gap-2">
-                      {person.links.map((item) => (
-                        <a
-                          key={item.label}
-                          href={item.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs text-foreground transition-colors hover:border-primary/40 hover:text-primary"
-                        >
-                          <item.icon className="h-3.5 w-3.5" />
-                          {item.label}
-                        </a>
-                      ))}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
+          <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.05 }}
+              className="rounded-2xl border border-border bg-card p-6"
+            >
+              <h3 className="text-xl font-semibold text-foreground">What makes it work</h3>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                KAIRO continuously monitors your tracked career URLs, detects new job postings quickly, and
+                sends Telegram alerts so you can act before the competition.
+              </p>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                You can fine-tune your tracking from the dashboard and stay up to date without manual checking.
+              </p>
+            </motion.div>
 
-            <div>
-              <h3 className="mb-6 text-center text-2xl font-semibold text-foreground">Founder</h3>
-              <div className="grid gap-6 lg:grid-cols-2">
-                {[founder].map((person, index) => (
-                  <motion.div
-                    key={person.name}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                    className="rounded-2xl border border-border bg-card p-6"
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="rounded-2xl border border-primary/20 bg-primary/5 p-6"
+            >
+              <h3 className="text-xl font-semibold text-foreground">Contact Ridhwan</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                For collaborations, feedback, or partnership opportunities, reach out through the options below.
+              </p>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {founder.links.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs text-foreground transition-colors hover:border-primary/40 hover:text-primary"
                   >
-                    <h3 className="text-xl font-semibold text-foreground">{person.name}</h3>
-                    <p className="mt-1 text-sm text-primary">{person.title}</p>
-                    {"location" in person && person.location && (
-                      <p className="mt-2 text-sm text-muted-foreground">{person.location}</p>
-                    )}
-                    <p className="mt-4 text-sm leading-6 text-muted-foreground">{person.summary}</p>
-                    <div className="mt-5 flex flex-wrap gap-2">
-                      {person.links.map((item) => (
-                        <a
-                          key={item.label}
-                          href={item.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs text-foreground transition-colors hover:border-primary/40 hover:text-primary"
-                        >
-                          <item.icon className="h-3.5 w-3.5" />
-                          {item.label}
-                        </a>
-                      ))}
-                    </div>
-                  </motion.div>
+                    <item.icon className="h-3.5 w-3.5" />
+                    {item.label}
+                  </a>
                 ))}
               </div>
-            </div>
+
+              <div className="mt-6">
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/contact">Open contact page</Link>
+                </Button>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
