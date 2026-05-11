@@ -85,9 +85,9 @@ const founder = {
   ],
 }
 
-const coDeveloper = {
+const contributor = {
   name: "Intisar Rahman Khan",
-  title: "Co-Developer",
+  title: "Contributor",
   summary:
     "I’m a Software Engineering student passionate about full-stack development, AI-powered applications, and scalable software systems. I have experience with C++, Java, Python, Django, Flutter, FastAPI, and modern web technologies to build efficient and user-focused applications. Alongside software development, I also work with photography, photo editing, and video editing, combining creativity with technology to create impactful digital experiences.",
   links: [
@@ -411,38 +411,80 @@ export default function LandingPage() {
             </motion.p>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            {[founder, coDeveloper].map((person, index) => (
-              <motion.div
-                key={person.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="rounded-2xl border border-border bg-card p-6"
-              >
-                <h3 className="text-xl font-semibold text-foreground">{person.name}</h3>
-                <p className="mt-1 text-sm text-primary">{person.title}</p>
-                {"location" in person && person.location && (
-                  <p className="mt-2 text-sm text-muted-foreground">{person.location}</p>
-                )}
-                <p className="mt-4 text-sm leading-6 text-muted-foreground">{person.summary}</p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {person.links.map((item) => (
-                    <a
-                      key={item.label}
-                      href={item.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs text-foreground transition-colors hover:border-primary/40 hover:text-primary"
-                    >
-                      <item.icon className="h-3.5 w-3.5" />
-                      {item.label}
-                    </a>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
+          <div className="space-y-12">
+            <div>
+              <h3 className="mb-6 text-center text-2xl font-semibold text-foreground">Contributor</h3>
+              <div className="grid gap-6 lg:grid-cols-2">
+                {[contributor].map((person, index) => (
+                  <motion.div
+                    key={person.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    className="rounded-2xl border border-border bg-card p-6"
+                  >
+                    <h3 className="text-xl font-semibold text-foreground">{person.name}</h3>
+                    <p className="mt-1 text-sm text-primary">{person.title}</p>
+                    {"location" in person && person.location && (
+                      <p className="mt-2 text-sm text-muted-foreground">{person.location}</p>
+                    )}
+                    <p className="mt-4 text-sm leading-6 text-muted-foreground">{person.summary}</p>
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {person.links.map((item) => (
+                        <a
+                          key={item.label}
+                          href={item.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                        >
+                          <item.icon className="h-3.5 w-3.5" />
+                          {item.label}
+                        </a>
+                      ))}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="mb-6 text-center text-2xl font-semibold text-foreground">Founder</h3>
+              <div className="grid gap-6 lg:grid-cols-2">
+                {[founder].map((person, index) => (
+                  <motion.div
+                    key={person.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    className="rounded-2xl border border-border bg-card p-6"
+                  >
+                    <h3 className="text-xl font-semibold text-foreground">{person.name}</h3>
+                    <p className="mt-1 text-sm text-primary">{person.title}</p>
+                    {"location" in person && person.location && (
+                      <p className="mt-2 text-sm text-muted-foreground">{person.location}</p>
+                    )}
+                    <p className="mt-4 text-sm leading-6 text-muted-foreground">{person.summary}</p>
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {person.links.map((item) => (
+                        <a
+                          key={item.label}
+                          href={item.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                        >
+                          <item.icon className="h-3.5 w-3.5" />
+                          {item.label}
+                        </a>
+                      ))}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
